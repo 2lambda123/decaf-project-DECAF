@@ -1,6 +1,6 @@
 FROM ubuntu:xenial-20210416
 
-RUN apt-get update 
+RUN apt-get update
 RUN apt-get install libsdl1.2-dev -y
 RUN apt-get install zlib1g-dev -y
 RUN apt-get install libglib2.0-dev -y
@@ -36,8 +36,8 @@ RUN ./configure --disable-tcg-taint --target-list=i386-softmmu
 
 RUN make
 
-RUN export uid=1000 gid=1000 
-RUN mkdir -p /home/db/ 
+RUN export uid=1000 gid=1000
+RUN mkdir -p /home/db/
 RUN echo "db:x:${uid}:${gid}:db,,,:/home/db:/bin/ bash" >> /etc/passwd
 RUN echo "db:x:${uid}:" >> /etc/group
 RUN echo "db ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/db
@@ -48,7 +48,7 @@ USER db
 ENV HOME /home/db
 
 
-RUN apt-get update 
+RUN apt-get update
 #setup samba to share file between guest os and host for qemu
 RUN apt-get install samba -y
 WORKDIR /etc/samba/
@@ -63,7 +63,7 @@ RUN cat /etc/samba/smb.conf
 
 WORKDIR /decafroot/
 RUN apt install wget
-RUN wget https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-all-3.5.0.tar.gz 
+RUN wget https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-all-3.5.0.tar.gz
 RUN tar -xvf protobuf-all-3.5.0.tar.gz
 WORKDIR /decafroot/protobuf-3.5.0
 RUN ./autogen.sh
