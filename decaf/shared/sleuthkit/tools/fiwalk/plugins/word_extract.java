@@ -12,6 +12,7 @@
  * through the command line, using the standard DGI interface.
  */
 
+import io.github.pixee.security.BoundedLineReader;
 import java.io.*;
 import java.util.regex.*;
 import java.lang.Runtime;
@@ -44,7 +45,7 @@ class word_extract {
             BufferedReader br = new BufferedReader(isr);
             Boolean flag = false;
             while(true){
-                String s = br.readLine();
+                String s = BoundedLineReader.readLine(br, 5_000_000);
                 /*check to see if line read was first line.
                   if it is the first line, 
                      1. prepend "Filename =" to it

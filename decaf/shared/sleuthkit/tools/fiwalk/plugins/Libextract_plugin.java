@@ -11,6 +11,7 @@
  * through the command line, using the standard DGI interface.
  */
 
+import io.github.pixee.security.BoundedLineReader;
 import java.io.*;
 import java.util.regex.*;
 import java.lang.Runtime;
@@ -40,7 +41,7 @@ class Libextract_plugin {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             while(true){
-                String s = br.readLine();
+                String s = BoundedLineReader.readLine(br, 5_000_000);
                 if(s==null) break;	// end of file
 		String a = processLibextractOutput(s);
 		if(a!=null){

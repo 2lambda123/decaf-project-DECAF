@@ -4,6 +4,7 @@
  * Way #2 - using the JVM interface.
  */
 
+import io.github.pixee.security.BoundedLineReader;
 import java.io.*;
 import java.util.regex.*;
 import java.lang.Runtime;
@@ -30,7 +31,7 @@ class jpeg_extract {
 	    InputStreamReader isr = new InputStreamReader(is);
 	    BufferedReader br = new BufferedReader(isr);
 	    while(true){
-		String s = br.readLine();
+		String s = BoundedLineReader.readLine(br, 5_000_000);
 		if(s==null) break;
 		sb.append(processExifOutput(s));
 		sb.append("\n");
