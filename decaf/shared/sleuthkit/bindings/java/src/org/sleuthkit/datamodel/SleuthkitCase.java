@@ -554,9 +554,10 @@ public class SleuthkitCase {
 	private void initBlackboardTypes() throws SQLException, TskCoreException {
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
+			PreparedStatement s = con.prepareStatement("SELECT * from blackboard_artifact_types WHERE artifact_type_id = ?");
 			for (ARTIFACT_TYPE type : ARTIFACT_TYPE.values()) {
-				ResultSet rs = s.executeQuery("SELECT * from blackboard_artifact_types WHERE artifact_type_id = '" + type.getTypeID() + "'");
+				s.setString(1, type.getTypeID());
+				ResultSet rs = s.execute();
 				if (!rs.next()) {
 					this.addBuiltInArtifactType(type);
 				}
@@ -816,19 +817,16 @@ public class SleuthkitCase {
 	public List<BlackboardArtifact> getBlackboardArtifacts(BlackboardAttribute.ATTRIBUTE_TYPE attrType, String value) throws TskCoreException {
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT DISTINCT blackboard_artifacts.artifact_id, "
-					+ "blackboard_artifacts.obj_id, blackboard_artifacts.artifact_type_id "
-					+ "FROM blackboard_artifacts, blackboard_attributes "
-					+ "WHERE blackboard_artifacts.artifact_id = blackboard_attributes.artifact_id "
-					+ "AND blackboard_attributes.attribute_type_id IS " + attrType.getTypeID()
-					+ " AND blackboard_attributes.value_text IS '" + value + "'");
-
+			PreparedStatement s = con.prepareStatement("SELECT DISTINCT blackboard_artifacts.artifact_id, blackboard_artifacts.obj_id, blackboard_artifacts.artifact_type_id FROM blackboard_artifacts, blackboard_attributes WHERE blackboard_artifacts.artifact_id = blackboard_attributes.artifact_id AND blackboard_attributes.attribute_type_id IS " + attrType.getTypeID()
+					+ " AND blackboard_attributes.value_text IS ?");
+			s.setString(1, value);
+			ResultSet rs = s.execute();
 			List<BlackboardArtifact> artifacts = getArtifactsHelper(rs);
-
 			rs.close();
 			s.close();
 			return artifacts;
+
+
 		} catch (SQLException ex) {
 			throw new TskCoreException("Error getting blackboard artifacts by attribute. " + ex.getMessage(), ex);
 		} finally {
@@ -859,19 +857,16 @@ public class SleuthkitCase {
 
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT DISTINCT blackboard_artifacts.artifact_id, "
-					+ "blackboard_artifacts.obj_id, blackboard_artifacts.artifact_type_id "
-					+ "FROM blackboard_artifacts, blackboard_attributes "
-					+ "WHERE blackboard_artifacts.artifact_id = blackboard_attributes.artifact_id "
-					+ "AND blackboard_attributes.attribute_type_id IS " + attrType.getTypeID()
-					+ " AND blackboard_attributes.value_text LIKE '" + subString + "'");
-
+			PreparedStatement s = con.prepareStatement("SELECT DISTINCT blackboard_artifacts.artifact_id, blackboard_artifacts.obj_id, blackboard_artifacts.artifact_type_id FROM blackboard_artifacts, blackboard_attributes WHERE blackboard_artifacts.artifact_id = blackboard_attributes.artifact_id AND blackboard_attributes.attribute_type_id IS " + attrType.getTypeID()
+					+ " AND blackboard_attributes.value_text LIKE ?");
+			s.setString(1, subString);
+			ResultSet rs = s.execute();
 			List<BlackboardArtifact> artifacts = getArtifactsHelper(rs);
-
 			rs.close();
 			s.close();
 			return artifacts;
+
+
 		} catch (SQLException ex) {
 			throw new TskCoreException("Error getting blackboard artifacts by attribute. " + ex.getMessage(), ex);
 		} finally {
@@ -1371,20 +1366,17 @@ public class SleuthkitCase {
 	public List<BlackboardArtifact> getBlackboardArtifacts(ARTIFACT_TYPE artifactType, BlackboardAttribute.ATTRIBUTE_TYPE attrType, String value) throws TskCoreException {
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT DISTINCT blackboard_artifacts.artifact_id, "
-					+ "blackboard_artifacts.obj_id, blackboard_artifacts.artifact_type_id "
-					+ "FROM blackboard_artifacts, blackboard_attributes "
-					+ "WHERE blackboard_artifacts.artifact_id = blackboard_attributes.artifact_id "
-					+ "AND blackboard_attributes.attribute_type_id IS " + attrType.getTypeID()
+			PreparedStatement s = con.prepareStatement("SELECT DISTINCT blackboard_artifacts.artifact_id, blackboard_artifacts.obj_id, blackboard_artifacts.artifact_type_id FROM blackboard_artifacts, blackboard_attributes WHERE blackboard_artifacts.artifact_id = blackboard_attributes.artifact_id AND blackboard_attributes.attribute_type_id IS " + attrType.getTypeID()
 					+ " AND blackboard_artifacts.artifact_type_id = " + artifactType.getTypeID()
-					+ " AND blackboard_attributes.value_text IS '" + value + "'");
-
+					+ " AND blackboard_attributes.value_text IS ?");
+			s.setString(1, value);
+			ResultSet rs = s.execute();
 			List<BlackboardArtifact> artifacts = getArtifactsHelper(rs);
-
 			rs.close();
 			s.close();
 			return artifacts;
+
+
 		} catch (SQLException ex) {
 			throw new TskCoreException("Error getting blackboard artifacts by artifact type and attribute. " + ex.getMessage(), ex);
 		} finally {
@@ -1573,8 +1565,9 @@ public class SleuthkitCase {
 	private void addAttrType(String attrTypeString, String displayName, int typeID) throws TskCoreException {
 		dbWriteLock();
 		try {
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * from blackboard_attribute_types WHERE type_name = '" + attrTypeString + "'");
+			PreparedStatement s = con.prepareStatement("SELECT * from blackboard_attribute_types WHERE type_name = ?");
+			s.setString(1, attrTypeString);
+			ResultSet rs = s.execute();
 			if (!rs.next()) {
 				s.executeUpdate("INSERT INTO blackboard_attribute_types (attribute_type_id, type_name, display_name) VALUES (" + typeID + ", '" + attrTypeString + "', '" + displayName + "')");
 				rs.close();
@@ -1603,10 +1596,10 @@ public class SleuthkitCase {
 	public int getAttrTypeID(String attrTypeString) throws TskCoreException {
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
+			PreparedStatement s = con.prepareStatement("SELECT attribute_type_id FROM blackboard_attribute_types WHERE type_name = ?");
 			ResultSet rs;
-
-			rs = s.executeQuery("SELECT attribute_type_id FROM blackboard_attribute_types WHERE type_name = '" + attrTypeString + "'");
+			s.setString(1, attrTypeString);
+			rs = s.execute();
 			if (rs.next()) {
 				int type = rs.getInt(1);
 				rs.close();
@@ -1617,6 +1610,7 @@ public class SleuthkitCase {
 				s.close();
 				throw new TskCoreException("No id with that name");
 			}
+
 		} catch (SQLException ex) {
 			throw new TskCoreException("Error getting attribute type id.", ex);
 		} finally {
@@ -1704,10 +1698,10 @@ public class SleuthkitCase {
 	int getArtifactTypeID(String artifactTypeString) throws TskCoreException {
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
+			PreparedStatement s = con.prepareStatement("SELECT artifact_type_id FROM blackboard_artifact_types WHERE type_name = ?");
 			ResultSet rs;
-
-			rs = s.executeQuery("SELECT artifact_type_id FROM blackboard_artifact_types WHERE type_name = '" + artifactTypeString + "'");
+			s.setString(1, artifactTypeString);
+			rs = s.execute();
 			if (rs.next()) {
 				int type = rs.getInt(1);
 				rs.close();
@@ -1718,6 +1712,7 @@ public class SleuthkitCase {
 				s.close();
 				throw new TskCoreException("No artifact with that name exists");
 			}
+
 
 		} catch (SQLException ex) {
 			throw new TskCoreException("Error getting artifact type id." + ex.getMessage(), ex);
@@ -1824,8 +1819,9 @@ public class SleuthkitCase {
 	private void addArtifactType(String artifactTypeName, String displayName, int typeID) throws TskCoreException {
 		dbWriteLock();
 		try {
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * FROM blackboard_artifact_types WHERE type_name = '" + artifactTypeName + "'");
+			PreparedStatement s = con.prepareStatement("SELECT * FROM blackboard_artifact_types WHERE type_name = ?");
+			s.setString(1, artifactTypeName);
+			ResultSet rs = s.execute();
 			if (!rs.next()) {
 				s.executeUpdate("INSERT INTO blackboard_artifact_types (artifact_type_id, type_name, display_name) VALUES (" + typeID + " , '" + artifactTypeName + "', '" + displayName + "')");
 				rs.close();
@@ -4832,13 +4828,12 @@ public class SleuthkitCase {
 		}
 		SleuthkitCase.dbWriteLock();
 		try {
-			Statement s = con.createStatement();
-			s.executeUpdate("UPDATE tsk_files "
-					+ "SET known='" + fileKnown.getFileKnownValue() + "' "
-					+ "WHERE obj_id=" + id);
+			PreparedStatement s = con.prepareStatement("UPDATE tsk_files SET known=? WHERE obj_id=" + id);
+			s.setString(1, fileKnown.getFileKnownValue());
+			s.execute();
 			s.close();
-			//update the object itself
 			file.setKnown(fileKnown);
+
 		} catch (SQLException ex) {
 			throw new TskCoreException("Error setting Known status.", ex);
 		} finally {
@@ -4909,8 +4904,9 @@ public class SleuthkitCase {
 		Short contentShort = contentType.getValue();
 		dbReadLock();
 		try {
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM tsk_files WHERE meta_type = '" + contentShort.toString() + "'");
+			PreparedStatement s = con.prepareStatement("SELECT COUNT(*) FROM tsk_files WHERE meta_type = ?");
+			s.setString(1, contentShort.toString());
+			ResultSet rs = s.execute();
 			while (rs.next()) {
 				count = rs.getInt(1);
 			}
