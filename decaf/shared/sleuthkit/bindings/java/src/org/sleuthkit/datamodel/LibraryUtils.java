@@ -120,7 +120,7 @@ public class LibraryUtils {
 	 * @return
 	 */
 	private static boolean isLinux() {
-		return System.getProperty("os.name").equals("Linux");
+		return "Linux".equals(System.getProperty("os.name"));
 	}
 	
     /**

@@ -731,7 +731,7 @@ public abstract class AbstractFile extends AbstractContent {
 	 */
 	protected void setLocalPath(String localPath, boolean isAbsolute) {
 		
-		if (localPath == null || localPath.equals("")) {
+		if (localPath == null || "".equals(localPath)) {
 			this.localPath = "";
 			localAbsPath = null;
 			localPathSet = false;

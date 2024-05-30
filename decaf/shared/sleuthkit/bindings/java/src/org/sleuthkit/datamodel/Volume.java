@@ -51,7 +51,7 @@ public class Volume extends AbstractContent {
 		this.start = start;
 		this.length = length;
 		this.flags = flags;
-		if (!desc.equals("")) {
+		if (!"".equals(desc)) {
 			this.desc = desc;
 		} else {
 			this.desc = "Unknown";
